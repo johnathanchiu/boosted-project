@@ -30,8 +30,7 @@
 #define UNDEFINED_CONNECTIVITY_3_CHARACTERISTIC_UUID "F4C47E66-0056-11E6-8D22-5E5517507C66"
 #define UNDEFINED_CONNECTIVITY_4_CHARACTERISTIC_UUID "F4C429F3-0056-11E6-8D22-5E5517507C66"
 #define UNDEFINED_CONNECTIVITY_5_CHARACTERISTIC_UUID "F4C48032-0056-11E6-8D22-5E5517507C66"
-#define UNDEFINED_CONNECTIVITY_6_CHARACTERISTIC_UUID "F4C48032-0056-11E6-8D22-5E5517507C66"
-#define UNDEFINED_CONNECTIVITY_7_CHARACTERISTIC_UUID "F4C4293F-0056-11E6-8D22-5E5517507C66"
+#define UNDEFINED_CONNECTIVITY_6_CHARACTERISTIC_UUID "F4C4293F-0056-11E6-8D22-5E5517507C66"
 
 BLEUUID DEVICE_INFORMATION_SERVICE_UUID = BLEUUID((uint16_t)0x180A);
 BLEUUID MODEL_NUMBER_CHARACTERISTIC_UUID = BLEUUID((uint16_t)0x2A24);
@@ -136,18 +135,16 @@ void setup() {
   BLECharacteristic *pUndefinedConnectivityCharacteristic3 = pConnectivityService->createCharacteristic(UNDEFINED_CONNECTIVITY_3_CHARACTERISTIC_UUID, BLECharacteristic::PROPERTY_WRITE);
   BLECharacteristic *pUndefinedConnectivityCharacteristic4 = pConnectivityService->createCharacteristic(UNDEFINED_CONNECTIVITY_4_CHARACTERISTIC_UUID, BLECharacteristic::PROPERTY_WRITE);
   BLECharacteristic *pUndefinedConnectivityCharacteristic5 = pConnectivityService->createCharacteristic(UNDEFINED_CONNECTIVITY_5_CHARACTERISTIC_UUID, BLECharacteristic::PROPERTY_WRITE);
-  BLECharacteristic *pUndefinedConnectivityCharacteristic6 = pConnectivityService->createCharacteristic(UNDEFINED_CONNECTIVITY_6_CHARACTERISTIC_UUID, BLECharacteristic::PROPERTY_WRITE);
-  BLECharacteristic *pUndefinedConnectivityCharacteristic7 = pConnectivityService->createCharacteristic(UNDEFINED_CONNECTIVITY_7_CHARACTERISTIC_UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
+  BLECharacteristic *pUndefinedConnectivityCharacteristic6 = pConnectivityService->createCharacteristic(UNDEFINED_CONNECTIVITY_6_CHARACTERISTIC_UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
 
   // Set values for device information characteristics
-  pUndefinedConnectivityCharacteristic7->setValue("BoostedRmt99BAF6E3");
+  pUndefinedConnectivityCharacteristic6->setValue("BoostedRmt99BAF6E3");
   pUndefinedConnectivityCharacteristic1->setCallbacks(new GeneralCharacteristicCallBack());
   pUndefinedConnectivityCharacteristic2->setCallbacks(new GeneralCharacteristicCallBack());
   pUndefinedConnectivityCharacteristic3->setCallbacks(new GeneralCharacteristicCallBack());
   pUndefinedConnectivityCharacteristic4->setCallbacks(new GeneralCharacteristicCallBack());
   pUndefinedConnectivityCharacteristic5->setCallbacks(new GeneralCharacteristicCallBack());
   pUndefinedConnectivityCharacteristic6->setCallbacks(new GeneralCharacteristicCallBack());
-  pUndefinedConnectivityCharacteristic7->setCallbacks(new GeneralCharacteristicCallBack());
 
   // Setup otau information service
   BLEService *pOtauService = pServer->createService(OTAU_SERVICE_UUID);
