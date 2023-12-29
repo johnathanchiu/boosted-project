@@ -1,0 +1,4 @@
+esp-ble/build
+esp-ble/.devcontainer
+
+*.DS_Store
