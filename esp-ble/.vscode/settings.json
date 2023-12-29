@@ -21,7 +21,10 @@
         "esp_bt_defs.h": "c",
         "esp_bt_main.h": "c",
         "esp_gatt_common_api.h": "c",
-        "*.inc": "c"
+        "*.inc": "c",
+        "task.h": "c",
+        "event_groups.h": "c",
+        "example_ble_sec_gatts_demo.h": "c"
     },
     "idf.flashType": "UART"
 }
