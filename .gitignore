@@ -1,4 +1,4 @@
-esp-ble/build
-esp-ble/.devcontainer
+*/build
+*/.devcontainer
 
 *.DS_Store

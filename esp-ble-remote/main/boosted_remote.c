@@ -3,7 +3,7 @@
 #include "freertos/event_groups.h"
 #include "sdkconfig.h"
 
-#include "example_ble_sec_gatts_demo.h"
+#include "boosted_remote.h"
 
 static uint8_t adv_config_done = 0;
 #define adv_config_flag (1 << 0)
