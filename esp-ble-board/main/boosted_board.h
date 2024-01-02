@@ -90,4 +90,4 @@ static void gatts_profile_device_info_event_handler(esp_gatts_cb_event_t event, 
 static void gatts_profile_service_1_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
 static void gatts_profile_service_2_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
 
-// void print_char_profile(const struct gatts_char_profile *char_profile);
+void print_char_profile(const struct gatts_char_profile *char_profile);

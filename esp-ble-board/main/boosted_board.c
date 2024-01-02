@@ -22,55 +22,55 @@ static uint8_t raw_scan_rsp_data[] = {
 // Define board info char values
 static uint8_t board_ride_modes_val[] = {0x04};
 static esp_attr_value_t board_ride_modes_profile = {
-    .attr_max_len = 0x01,
+    .attr_max_len = 0x08,
     .attr_len = sizeof(board_ride_modes_val),
     .attr_value = board_ride_modes_val,
 };
 static uint8_t board_current_ride_mode_val[] = {0x03};
 static esp_attr_value_t board_current_ride_mode_profile = {
-    .attr_max_len = 0x01,
+    .attr_max_len = 0x08,
     .attr_len = sizeof(board_current_ride_mode_val),
     .attr_value = board_current_ride_mode_val,
 };
 static uint8_t board_value_val[] = {0x02};
 static esp_attr_value_t board_value_profile = {
-    .attr_max_len = 0x01,
+    .attr_max_len = 0x08,
     .attr_len = sizeof(board_value_val),
     .attr_value = board_value_val,
 };
 static uint8_t board_odometry_val[] = {0xF6, 0xCF, 0x5C, 0x00};
 static esp_attr_value_t board_odometry_profile = {
-    .attr_max_len = 0x04,
+    .attr_max_len = 0x20,
     .attr_len = sizeof(board_odometry_val),
     .attr_value = board_odometry_val,
 };
 static uint8_t board_id_val[] = {0x42, 0x6F, 0x6F, 0x73, 0x74, 0x65, 0x64, 0x42, 0x6F, 0x61, 0x72, 0x64, 0x36, 0x39, 0x41, 0x31, 0x30, 0x41, 0x32, 0x41, 0x00};
 static esp_attr_value_t board_id_profile = {
-    .attr_max_len = 0x15,
+    .attr_max_len = 0x98,
     .attr_len = sizeof(board_id_val),
     .attr_value = board_id_val,
 };
 static uint8_t board_info_char_1_val[] = {0x4E, 0x6F, 0x6E, 0x65};
 static esp_attr_value_t board_info_char_1_profile = {
-    .attr_max_len = 0x04,
+    .attr_max_len = 0x20,
     .attr_len = sizeof(board_info_char_1_val),
     .attr_value = board_info_char_1_val,
 };
 static uint8_t board_info_char_2_val[] = {0x4E, 0x6F, 0x6E, 0x65};
 static esp_attr_value_t board_info_char_2_profile = {
-    .attr_max_len = 0x04,
+    .attr_max_len = 0x20,
     .attr_len = sizeof(board_info_char_2_val),
     .attr_value = board_info_char_2_val,
 };
 static uint8_t board_info_char_3_val[] = {0x00, 0x00};
 static esp_attr_value_t board_info_char_3_profile = {
-    .attr_max_len = 0x02,
+    .attr_max_len = 0x10,
     .attr_len = sizeof(board_info_char_3_val),
     .attr_value = board_info_char_3_val,
 };
 static uint8_t board_info_char_4_val[] = {0x00, 0x00, 0x00, 0x00};
 static esp_attr_value_t board_info_char_4_profile = {
-    .attr_max_len = 0x04,
+    .attr_max_len = 0x20,
     .attr_len = sizeof(board_info_char_4_val),
     .attr_value = board_info_char_4_val,
 };
@@ -78,31 +78,31 @@ static esp_attr_value_t board_info_char_4_profile = {
 // Define device info char values
 static uint8_t devinfo_model_num_val[] = {0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30};
 static esp_attr_value_t devinfo_model_num_char_profile = {
-    .attr_max_len = 0x08,
+    .attr_max_len = 0x40,
     .attr_len = sizeof(devinfo_model_num_val),
     .attr_value = devinfo_model_num_val,
 };
 static uint8_t devinfo_manufacturer_name_val[] = {0x42, 0x6F, 0x6F, 0x73, 0x74, 0x65, 0x64, 0x2C, 0x20, 0x49, 0x6E, 0x63, 0x2E};
 static esp_attr_value_t devinfo_manufacturer_name_char_profile = {
-    .attr_max_len = 0x0D,
+    .attr_max_len = 0x98,
     .attr_len = sizeof(devinfo_manufacturer_name_val),
     .attr_value = devinfo_manufacturer_name_val,
 };
 static uint8_t devinfo_hw_revision_val[] = {0x30, 0x30, 0x30, 0x30};
 static esp_attr_value_t devinfo_hw_revision_char_profile = {
-    .attr_max_len = 0x04,
+    .attr_max_len = 0x20,
     .attr_len = sizeof(devinfo_hw_revision_val),
     .attr_value = devinfo_hw_revision_val,
 };
 static uint8_t devinfo_fw_revision_val[] = {0x76, 0x31, 0x2E, 0x35, 0x2E, 0x32};
 static esp_attr_value_t devinfo_fw_revision_char_profile = {
-    .attr_max_len = 0x06,
+    .attr_max_len = 0x30,
     .attr_len = sizeof(devinfo_fw_revision_val),
     .attr_value = devinfo_fw_revision_val,
 };
 static uint8_t devinfo_pnp_val[] = {0x01, 0x00, 0x0A, 0x00, 0x4C, 0x01, 0x00, 0x01};
 static esp_attr_value_t devinfo_pnp_char_profile = {
-    .attr_max_len = 0x08,
+    .attr_max_len = 0x40,
     .attr_len = sizeof(devinfo_pnp_val),
     .attr_value = devinfo_pnp_val,
 };
@@ -110,25 +110,25 @@ static esp_attr_value_t devinfo_pnp_char_profile = {
 // Define battery info char values
 static uint8_t battery_soc_val[] = {0x5B};
 static esp_attr_value_t battery_soc_profile = {
-    .attr_max_len = 0x01,
+    .attr_max_len = 0x08,
     .attr_len = sizeof(battery_soc_val),
     .attr_value = battery_soc_val,
 };
 static uint8_t battery_capacity_val[] = {0x00, 0x9F, 0x24, 0x00};
 static esp_attr_value_t battery_capacity_profile = {
-    .attr_max_len = 0x04,
+    .attr_max_len = 0x20,
     .attr_len = sizeof(battery_capacity_val),
     .attr_value = battery_capacity_val,
 };
 static uint8_t battery_info_char_1_val[] = {0x00};
 static esp_attr_value_t battery_info_char_1_profile = {
-    .attr_max_len = 0x01,
+    .attr_max_len = 0x08,
     .attr_len = sizeof(battery_info_char_1_val),
     .attr_value = battery_info_char_1_val,
 };
 static uint8_t battery_info_char_2_val[] = {0x00};
 static esp_attr_value_t battery_info_char_2_profile = {
-    .attr_max_len = 0x01,
+    .attr_max_len = 0x08,
     .attr_len = sizeof(battery_info_char_2_val),
     .attr_value = battery_info_char_2_val,
 };
@@ -136,13 +136,13 @@ static esp_attr_value_t battery_info_char_2_profile = {
 // Define service 2 char values
 static uint8_t svc_2_char_1_val[] = {0x01};
 static esp_attr_value_t svc_2_char_1_profile = {
-    .attr_max_len = 0x01,
+    .attr_max_len = 0x08,
     .attr_len = sizeof(svc_2_char_1_val),
     .attr_value = svc_2_char_1_val,
 };
 static uint8_t svc_2_char_4_val[] = {0x07};
 static esp_attr_value_t svc_2_char_4_profile = {
-    .attr_max_len = 0x01,
+    .attr_max_len = 0x08,
     .attr_len = sizeof(svc_2_char_4_val),
     .attr_value = svc_2_char_4_val,
 };
@@ -590,7 +590,7 @@ static void gatts_profile_board_info_event_handler(esp_gatts_cb_event_t event, e
         int idx;
         for (idx = 0; idx < BOARD_INFO_PROFILE_NUM_CHARS; idx++)
         {
-            // print_char_profile(&gl_dinfo_svc_char_profile_tab[idx]);
+            // print_char_profile(&gl_board_info_svc_char_profile_tab[idx]);
             esp_err_t add_char_ret = esp_ble_gatts_add_char(gl_profile_tab[PROFILE_BOARD_INFO_APP_ID].service_handle,
                                                             &gl_board_info_svc_char_profile_tab[idx].char_uuid,
                                                             gl_board_info_svc_char_profile_tab[idx].perm,
@@ -747,7 +747,7 @@ static void gatts_profile_service_2_event_handler(esp_gatts_cb_event_t event, es
         int idx;
         for (idx = 0; idx < SERVICE_2_PROFILE_NUM_CHARS; idx++)
         {
-            // print_char_profile(&gl_conn_svc_char_profile_tab[idx]);
+            print_char_profile(&gl_svc_2_char_profile_tab[idx]);
             esp_err_t add_char_ret = esp_ble_gatts_add_char(gl_profile_tab[PROFILE_SERVICE_2_APP_ID].service_handle,
                                                             &gl_svc_2_char_profile_tab[idx].char_uuid,
                                                             gl_svc_2_char_profile_tab[idx].perm,
@@ -818,6 +818,7 @@ static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param
                  param->update_conn_params.timeout);
         break;
     default:
+        ESP_LOGI(GATTS_TAG, "got some potential information %d...", event);
         break;
     }
 }
@@ -953,19 +954,19 @@ void app_main()
     return;
 }
 
-// void print_char_profile(const struct gatts_char_profile *char_profile)
-// {
-//     if (char_profile->char_val != NULL)
-//     {
-//         printf("char_val: %p, len: %d, content: ", (void *)char_profile->char_val, char_profile->char_val->attr_len);
-//         for (int i = 0; i < char_profile->char_val->attr_len; i++)
-//         {
-//             printf("%02X ", char_profile->char_val->attr_value[i]);
-//         }
-//         printf("\n");
-//     }
-//     else
-//     {
-//         printf("char_val is NULL\n");
-//     }
-// }
+void print_char_profile(const struct gatts_char_profile *char_profile)
+{
+    if (char_profile->char_val != NULL)
+    {
+        printf("char_val: %p, len: %d, content: ", (void *)char_profile->char_val, char_profile->char_val->attr_len);
+        for (int i = 0; i < char_profile->char_val->attr_len; i++)
+        {
+            printf("%02X ", char_profile->char_val->attr_value[i]);
+        }
+        printf("\n");
+    }
+    else
+    {
+        printf("char_val is NULL\n");
+    }
+}
