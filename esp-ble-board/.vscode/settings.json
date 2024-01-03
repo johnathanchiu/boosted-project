@@ -1,31 +1,8 @@
 {
-    "C_Cpp.intelliSenseEngine": "default",
     "idf.adapterTargetName": "esp32",
-    "idf.customExtraPaths": "/Users/johnathanchiu/.espressif/tools/xtensa-esp-elf-gdb/12.1_20231023/xtensa-esp-elf-gdb/bin:/Users/johnathanchiu/.espressif/tools/riscv32-esp-elf-gdb/12.1_20231023/riscv32-esp-elf-gdb/bin:/Users/johnathanchiu/.espressif/tools/xtensa-esp-elf/esp-13.2.0_20230928/xtensa-esp-elf/bin:/Users/johnathanchiu/.espressif/tools/riscv32-esp-elf/esp-13.2.0_20230928/riscv32-esp-elf/bin:/Users/johnathanchiu/.espressif/tools/esp32ulp-elf/2.35_20220830/esp32ulp-elf/bin:/Users/johnathanchiu/.espressif/tools/openocd-esp32/v0.12.0-esp32-20230921/openocd-esp32/bin:/Users/johnathanchiu/.espressif/tools/esp-rom-elfs/20230320",
-    "idf.customExtraVars": {
-        "OPENOCD_SCRIPTS": "/Users/johnathanchiu/.espressif/tools/openocd-esp32/v0.12.0-esp32-20230921/openocd-esp32/share/openocd/scripts",
-        "ESP_ROM_ELF_DIR": "/Users/johnathanchiu/.espressif/tools/esp-rom-elfs/20230320/"
-    },
-    "idf.espIdfPath": "/Users/johnathanchiu/esp/esp-idf",
-    "idf.openOcdConfigs": [
-        "board/esp32-wrover-kit-3.3v.cfg"
-    ],
+    "idf.flashType": "UART",
     "idf.port": "/dev/cu.usbserial-0001",
-    "idf.pythonBinPath": "/Users/johnathanchiu/.espressif/python_env/idf5.3_py3.11_env/bin/python",
-    "idf.toolsPath": "/Users/johnathanchiu/.espressif",
     "files.associations": {
-        "regex": "c",
-        "sdkconfig.h": "c",
-        "esp_gatts_api.h": "c",
-        "esp_gap_ble_api.h": "c",
-        "esp_bt_defs.h": "c",
-        "esp_bt_main.h": "c",
-        "esp_gatt_common_api.h": "c",
-        "*.inc": "c",
-        "task.h": "c",
-        "event_groups.h": "c",
-        "example_ble_sec_gatts_demo.h": "c",
-        "esp_system.h": "c"
-    },
-    "idf.flashType": "UART"
+        "boosted_remote.h": "c"
+    }
 }
