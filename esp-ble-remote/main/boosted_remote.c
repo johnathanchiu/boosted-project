@@ -109,9 +109,9 @@ static esp_ble_adv_params_t adv_params = {
     .adv_int_min = 0x20,
     .adv_int_max = 0x40,
     .adv_type = ADV_TYPE_IND,
-    .own_addr_type = BLE_ADDR_TYPE_RANDOM,
+    .own_addr_type = BLE_ADDR_TYPE_RPA_RANDOM,
     .channel_map = ADV_CHNL_ALL,
-    .adv_filter_policy = ADV_FILTER_ALLOW_SCAN_ANY_CON_WLST,
+    .adv_filter_policy = ADV_FILTER_ALLOW_SCAN_ANY_CON_ANY,
 };
 
 // Define all the services
@@ -621,8 +621,6 @@ static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param
     switch (event)
     {
     case ESP_GAP_BLE_ADV_DATA_RAW_SET_COMPLETE_EVT:
-        // esp_ble_gap_start_advertising(&adv_params);
-        // ESP_LOGI(GATTS_TAG, "advertising started!");
         adv_config_done &= (~adv_config_flag);
         if (adv_config_done == 0)
         {
@@ -638,22 +636,22 @@ static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param
             ESP_LOGI(GATTS_TAG, "advertising started!");
         }
         break;
-    // case ESP_GAP_BLE_SCAN_REQ_RECEIVED_EVT:
-    //     ESP_LOGI(GATTS_TAG, "Received scan request");
-    //     esp_bd_addr_t bda = {0};
-    //     memcpy(bda, param->scan_rst.bda, ESP_BD_ADDR_LEN);
-    //     ESP_LOGI(GATTS_TAG, "Received scan request from device with address: %02x:%02x:%02x:%02x:%02x:%02x",
-    //              bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
-    //     break;
-    // case ESP_GAP_BLE_UPDATE_CONN_PARAMS_EVT:
-    //     ESP_LOGI(GATTS_TAG, "update connection params status = %d, min_int = %d, max_int = %d,conn_int = %d,latency = %d, timeout = %d",
-    //              param->update_conn_params.status,
-    //              param->update_conn_params.min_int,
-    //              param->update_conn_params.max_int,
-    //              param->update_conn_params.conn_int,
-    //              param->update_conn_params.latency,
-    //              param->update_conn_params.timeout);
-    //     break;
+    case ESP_GAP_BLE_SCAN_REQ_RECEIVED_EVT:
+        ESP_LOGI(GATTS_TAG, "Received scan request");
+        esp_bd_addr_t bda = {0};
+        memcpy(bda, param->scan_rst.bda, ESP_BD_ADDR_LEN);
+        ESP_LOGI(GATTS_TAG, "Received scan request from device with address: %02x:%02x:%02x:%02x:%02x:%02x",
+                 bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
+        break;
+    case ESP_GAP_BLE_UPDATE_CONN_PARAMS_EVT:
+        ESP_LOGI(GATTS_TAG, "update connection params status = %d, min_int = %d, max_int = %d,conn_int = %d,latency = %d, timeout = %d",
+                 param->update_conn_params.status,
+                 param->update_conn_params.min_int,
+                 param->update_conn_params.max_int,
+                 param->update_conn_params.conn_int,
+                 param->update_conn_params.latency,
+                 param->update_conn_params.timeout);
+        break;
     default:
         ESP_LOGI(GATTS_TAG, "something happened with event %d", event);
         break;
@@ -794,8 +792,7 @@ void app_main()
 
 void generate_random_address(esp_bd_addr_t rand_addr)
 {
-    // Set the two most significant bits to '11' for a non-resolvable private address
-    rand_addr[0] = 0xC0;
+    rand_addr[0] = 0x40;
 
     // Generate random values for the rest of the address
     for (int i = 1; i < ESP_BD_ADDR_LEN; i++)
