@@ -109,11 +109,9 @@ static esp_ble_adv_params_t adv_params = {
     .adv_int_min = 0x20,
     .adv_int_max = 0x40,
     .adv_type = ADV_TYPE_IND,
-    .own_addr_type = BLE_ADDR_TYPE_PUBLIC,
-    //.peer_addr            =
-    //.peer_addr_type       =
+    .own_addr_type = BLE_ADDR_TYPE_RANDOM,
     .channel_map = ADV_CHNL_ALL,
-    .adv_filter_policy = ADV_FILTER_ALLOW_SCAN_ANY_CON_ANY,
+    .adv_filter_policy = ADV_FILTER_ALLOW_SCAN_ANY_CON_WLST,
 };
 
 // Define all the services
@@ -560,23 +558,23 @@ static void gatts_profile_connectivity_event_handler(esp_gatts_cb_event_t event,
     case ESP_GATTS_REG_EVT:
         ESP_LOGI(GATTS_TAG, "REGISTER_APP_EVT, status %d, app_id %d", param->reg.status, param->reg.app_id);
 
-        esp_err_t set_dev_name_ret = esp_ble_gap_set_device_name(DEVICE_NAME);
+        esp_err_t set_dev_name_ret = esp_bt_dev_set_device_name(DEVICE_NAME);
         if (set_dev_name_ret)
         {
             ESP_LOGE(GATTS_TAG, "set device name failed, error code = %x", set_dev_name_ret);
         }
-        esp_err_t raw_adv_ret = esp_ble_gap_config_adv_data_raw(raw_adv_data, sizeof(raw_adv_data));
-        if (raw_adv_ret)
-        {
-            ESP_LOGE(GATTS_TAG, "config raw adv data failed, error code = %x ", raw_adv_ret);
-        }
-        adv_config_done |= adv_config_flag;
         esp_err_t raw_scan_ret = esp_ble_gap_config_scan_rsp_data_raw(raw_scan_rsp_data, sizeof(raw_scan_rsp_data));
         if (raw_scan_ret)
         {
             ESP_LOGE(GATTS_TAG, "config raw scan rsp data failed, error code = %x", raw_scan_ret);
         }
         adv_config_done |= scan_rsp_config_flag;
+        esp_err_t raw_adv_ret = esp_ble_gap_config_adv_data_raw(raw_adv_data, sizeof(raw_adv_data));
+        if (raw_adv_ret)
+        {
+            ESP_LOGE(GATTS_TAG, "config raw adv data failed, error code = %x ", raw_adv_ret);
+        }
+        adv_config_done |= adv_config_flag;
         esp_err_t raw_svc_ret = esp_ble_gatts_create_service(gatts_if, &gl_profile_tab[PROFILE_CONNECTIVITY_APP_ID].service_id, GATTS_CONNECTIVITY_NUM_HANDLE);
         if (raw_svc_ret)
         {
@@ -623,10 +621,13 @@ static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param
     switch (event)
     {
     case ESP_GAP_BLE_ADV_DATA_RAW_SET_COMPLETE_EVT:
+        // esp_ble_gap_start_advertising(&adv_params);
+        // ESP_LOGI(GATTS_TAG, "advertising started!");
         adv_config_done &= (~adv_config_flag);
         if (adv_config_done == 0)
         {
             esp_ble_gap_start_advertising(&adv_params);
+            ESP_LOGI(GATTS_TAG, "advertising started!");
         }
         break;
     case ESP_GAP_BLE_SCAN_RSP_DATA_RAW_SET_COMPLETE_EVT:
@@ -634,35 +635,27 @@ static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param
         if (adv_config_done == 0)
         {
             esp_ble_gap_start_advertising(&adv_params);
+            ESP_LOGI(GATTS_TAG, "advertising started!");
         }
         break;
-    case ESP_GAP_BLE_ADV_START_COMPLETE_EVT:
-        // advertising start complete event to indicate advertising start successfully or failed
-        if (param->adv_start_cmpl.status != ESP_BT_STATUS_SUCCESS)
-        {
-            ESP_LOGE(GATTS_TAG, "Advertising start failed");
-        }
-        break;
-    case ESP_GAP_BLE_ADV_STOP_COMPLETE_EVT:
-        if (param->adv_stop_cmpl.status != ESP_BT_STATUS_SUCCESS)
-        {
-            ESP_LOGE(GATTS_TAG, "Advertising stop failed");
-        }
-        else
-        {
-            ESP_LOGI(GATTS_TAG, "Stop adv successfully");
-        }
-        break;
-    case ESP_GAP_BLE_UPDATE_CONN_PARAMS_EVT:
-        ESP_LOGI(GATTS_TAG, "update connection params status = %d, min_int = %d, max_int = %d,conn_int = %d,latency = %d, timeout = %d",
-                 param->update_conn_params.status,
-                 param->update_conn_params.min_int,
-                 param->update_conn_params.max_int,
-                 param->update_conn_params.conn_int,
-                 param->update_conn_params.latency,
-                 param->update_conn_params.timeout);
-        break;
+    // case ESP_GAP_BLE_SCAN_REQ_RECEIVED_EVT:
+    //     ESP_LOGI(GATTS_TAG, "Received scan request");
+    //     esp_bd_addr_t bda = {0};
+    //     memcpy(bda, param->scan_rst.bda, ESP_BD_ADDR_LEN);
+    //     ESP_LOGI(GATTS_TAG, "Received scan request from device with address: %02x:%02x:%02x:%02x:%02x:%02x",
+    //              bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
+    //     break;
+    // case ESP_GAP_BLE_UPDATE_CONN_PARAMS_EVT:
+    //     ESP_LOGI(GATTS_TAG, "update connection params status = %d, min_int = %d, max_int = %d,conn_int = %d,latency = %d, timeout = %d",
+    //              param->update_conn_params.status,
+    //              param->update_conn_params.min_int,
+    //              param->update_conn_params.max_int,
+    //              param->update_conn_params.conn_int,
+    //              param->update_conn_params.latency,
+    //              param->update_conn_params.timeout);
+    //     break;
     default:
+        ESP_LOGI(GATTS_TAG, "something happened with event %d", event);
         break;
     }
 }
@@ -742,6 +735,15 @@ void app_main()
         return;
     }
 
+    esp_bd_addr_t rand_addr;
+    generate_random_address(rand_addr);
+    ret = esp_ble_gap_set_rand_addr(rand_addr);
+    if (ret)
+    {
+        ESP_LOGE(GATTS_TAG, "gatts register error, error code = %x", ret);
+        return;
+    }
+
     ret = esp_ble_gatts_register_callback(gatts_event_handler);
     if (ret)
     {
@@ -788,6 +790,18 @@ void app_main()
         ESP_LOGE(GATTS_TAG, "set local  MTU failed, error code = %x", local_mtu_ret);
     }
     return;
+}
+
+void generate_random_address(esp_bd_addr_t rand_addr)
+{
+    // Set the two most significant bits to '11' for a non-resolvable private address
+    rand_addr[0] = 0xC0;
+
+    // Generate random values for the rest of the address
+    for (int i = 1; i < ESP_BD_ADDR_LEN; i++)
+    {
+        rand_addr[i] = esp_random() & 0xFF;
+    }
 }
 
 // void print_char_profile(const struct gatts_char_profile *char_profile)
