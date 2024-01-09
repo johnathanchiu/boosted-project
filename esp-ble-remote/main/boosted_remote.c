@@ -670,7 +670,7 @@ static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param
                  param->update_conn_params.timeout);
         break;
     case ESP_GAP_BLE_SEC_REQ_EVT:
-        ESP_LOGI(GATTS_TAG, "SEC_REQ_EVT: peer device w/ address %02x:%02x:%02x:%02x:%02x:%02x",
+        ESP_LOGI(GATTS_TAG, "SEC_REQ_EVT, peer device w/ address %02x:%02x:%02x:%02x:%02x:%02x",
                  param->ble_security.ble_req.bd_addr[0],
                  param->ble_security.ble_req.bd_addr[1],
                  param->ble_security.ble_req.bd_addr[2],
@@ -680,23 +680,32 @@ static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param
         esp_ble_gap_security_rsp(param->ble_security.ble_req.bd_addr, true); // Accept the security request
         break;
     case ESP_GAP_BLE_KEY_EVT:
-        ESP_LOGI(GATTS_TAG, "BLE_KEY_EVT: key exchange event with key type %d", param->ble_security.ble_key.key_type);
+        ESP_LOGI(GATTS_TAG, "BLE_KEY_EVT, key exchange event with key type %d", param->ble_security.ble_key.key_type);
         break;
     case ESP_GAP_BLE_AUTH_CMPL_EVT:
         esp_bd_addr_t bd_addr;
         memcpy(bd_addr, param->ble_security.auth_cmpl.bd_addr, sizeof(esp_bd_addr_t));
-        ESP_LOGI(GATTS_TAG, "remote BD_ADDR: %08x%04x",
-                 (bd_addr[0] << 24) + (bd_addr[1] << 16) + (bd_addr[2] << 8) + bd_addr[3],
-                 (bd_addr[4] << 8) + bd_addr[5]);
-        ESP_LOGI(GATTS_TAG, "address type = %d", param->ble_security.auth_cmpl.addr_type);
-        ESP_LOGI(GATTS_TAG, "pair status = %s", param->ble_security.auth_cmpl.success ? "success" : "fail");
+        ESP_LOGI(GATTS_TAG, "AUTH_CMPL_EVT, address type = %d", param->ble_security.auth_cmpl.addr_type);
+        ESP_LOGI(GATTS_TAG, "AUTH_CMPL_EVT, pair status = %s", param->ble_security.auth_cmpl.success ? "success" : "fail");
         if (!param->ble_security.auth_cmpl.success)
         {
-            ESP_LOGI(GATTS_TAG, "fail reason = 0x%x", param->ble_security.auth_cmpl.fail_reason);
+            ESP_LOGI(GATTS_TAG, "AUTH_CMPL_EVT, fail reason = 0x%x", param->ble_security.auth_cmpl.fail_reason);
         }
         else
         {
-            ESP_LOGI(GATTS_TAG, "auth mode = %s", esp_auth_req_to_str(param->ble_security.auth_cmpl.auth_mode));
+            ESP_LOGI(GATTS_TAG, "AUTH_CMPL_EVT, auth mode = %s", esp_auth_req_to_str(param->ble_security.auth_cmpl.auth_mode));
+            raw_adv_data[23] = 0x00;
+            esp_err_t raw_adv_ret = esp_ble_gap_config_adv_data_raw(raw_adv_data, sizeof(raw_adv_data));
+            if (raw_adv_ret)
+            {
+                ESP_LOGE(GATTS_TAG, "config raw adv data failed, error code = %x ", raw_adv_ret);
+            }
+            // esp_err_t ret;
+            // ret = esp_ble_gap_stop_advertising();
+            // if (ret)
+            // {
+            //     ESP_LOGE(GATTS_TAG, "Failed to stop advertising");
+            // }
         }
         break;
     default:
@@ -736,6 +745,13 @@ static void gatts_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_
                 gl_profile_tab[idx].gatts_cb(event, gatts_if, param);
             }
         }
+    }
+
+    switch (event)
+    {
+    default:
+        ESP_LOGI(GATTS_TAG, "Something happened with the gatts profile %d", event);
+        break;
     }
 }
 
