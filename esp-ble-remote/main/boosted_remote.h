@@ -88,4 +88,5 @@ static void gatts_profile_controls_event_handler(esp_gatts_cb_event_t event, esp
 static void gatts_profile_otau_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
 
 void generate_random_address(esp_bd_addr_t rand_addr);
+char *esp_auth_req_to_str(esp_ble_auth_req_t auth_req);
 // void print_char_profile(const struct gatts_char_profile *char_profile);

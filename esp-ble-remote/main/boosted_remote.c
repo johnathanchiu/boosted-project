@@ -110,6 +110,7 @@ static esp_ble_adv_params_t adv_params = {
     .adv_int_max = 0x40,
     .adv_type = ADV_TYPE_IND,
     .own_addr_type = BLE_ADDR_TYPE_RPA_RANDOM,
+    // .peer_addr_type = BLE_ADDR_TYPE_RPA_RANDOM,
     .channel_map = ADV_CHNL_ALL,
     .adv_filter_policy = ADV_FILTER_ALLOW_SCAN_ANY_CON_ANY,
 };
@@ -624,16 +625,32 @@ static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param
         adv_config_done &= (~adv_config_flag);
         if (adv_config_done == 0)
         {
+            ESP_LOGI(GATTS_TAG, "advertisting data set!");
             esp_ble_gap_start_advertising(&adv_params);
             ESP_LOGI(GATTS_TAG, "advertising started!");
+        }
+        else
+        {
+            ESP_LOGI(GATTS_TAG, "advertisting data set!");
         }
         break;
     case ESP_GAP_BLE_SCAN_RSP_DATA_RAW_SET_COMPLETE_EVT:
         adv_config_done &= (~scan_rsp_config_flag);
         if (adv_config_done == 0)
         {
+            ESP_LOGI(GATTS_TAG, "scan response data set!");
             esp_ble_gap_start_advertising(&adv_params);
             ESP_LOGI(GATTS_TAG, "advertising started!");
+        }
+        else
+        {
+            ESP_LOGI(GATTS_TAG, "scan response data set!");
+        }
+        break;
+    case ESP_GAP_BLE_ADV_START_COMPLETE_EVT:
+        if (param->adv_start_cmpl.status != ESP_BT_STATUS_SUCCESS)
+        {
+            ESP_LOGE(GATTS_TAG, "Advertising start failed");
         }
         break;
     case ESP_GAP_BLE_SCAN_REQ_RECEIVED_EVT:
@@ -651,6 +668,36 @@ static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param
                  param->update_conn_params.conn_int,
                  param->update_conn_params.latency,
                  param->update_conn_params.timeout);
+        break;
+    case ESP_GAP_BLE_SEC_REQ_EVT:
+        ESP_LOGI(GATTS_TAG, "SEC_REQ_EVT: peer device w/ address %02x:%02x:%02x:%02x:%02x:%02x",
+                 param->ble_security.ble_req.bd_addr[0],
+                 param->ble_security.ble_req.bd_addr[1],
+                 param->ble_security.ble_req.bd_addr[2],
+                 param->ble_security.ble_req.bd_addr[3],
+                 param->ble_security.ble_req.bd_addr[4],
+                 param->ble_security.ble_req.bd_addr[5]);
+        esp_ble_gap_security_rsp(param->ble_security.ble_req.bd_addr, true); // Accept the security request
+        break;
+    case ESP_GAP_BLE_KEY_EVT:
+        ESP_LOGI(GATTS_TAG, "BLE_KEY_EVT: key exchange event with key type %d", param->ble_security.ble_key.key_type);
+        break;
+    case ESP_GAP_BLE_AUTH_CMPL_EVT:
+        esp_bd_addr_t bd_addr;
+        memcpy(bd_addr, param->ble_security.auth_cmpl.bd_addr, sizeof(esp_bd_addr_t));
+        ESP_LOGI(GATTS_TAG, "remote BD_ADDR: %08x%04x",
+                 (bd_addr[0] << 24) + (bd_addr[1] << 16) + (bd_addr[2] << 8) + bd_addr[3],
+                 (bd_addr[4] << 8) + bd_addr[5]);
+        ESP_LOGI(GATTS_TAG, "address type = %d", param->ble_security.auth_cmpl.addr_type);
+        ESP_LOGI(GATTS_TAG, "pair status = %s", param->ble_security.auth_cmpl.success ? "success" : "fail");
+        if (!param->ble_security.auth_cmpl.success)
+        {
+            ESP_LOGI(GATTS_TAG, "fail reason = 0x%x", param->ble_security.auth_cmpl.fail_reason);
+        }
+        else
+        {
+            ESP_LOGI(GATTS_TAG, "auth mode = %s", esp_auth_req_to_str(param->ble_security.auth_cmpl.auth_mode));
+        }
         break;
     default:
         ESP_LOGI(GATTS_TAG, "something happened with event %d", event);
@@ -733,14 +780,21 @@ void app_main()
         return;
     }
 
-    esp_bd_addr_t rand_addr;
-    generate_random_address(rand_addr);
-    ret = esp_ble_gap_set_rand_addr(rand_addr);
+    ret = esp_ble_gap_config_local_privacy(true);
     if (ret)
     {
-        ESP_LOGE(GATTS_TAG, "gatts register error, error code = %x", ret);
+        ESP_LOGE(GATTS_TAG, "privacy set failed, error code = %x", ret);
         return;
     }
+
+    // esp_bd_addr_t rand_addr;
+    // generate_random_address(rand_addr);
+    // ret = esp_ble_gap_set_rand_addr(rand_addr);
+    // if (ret)
+    // {
+    //     ESP_LOGE(GATTS_TAG, "failure to set random address, error code = %x", ret);
+    //     return;
+    // }
 
     ret = esp_ble_gatts_register_callback(gatts_event_handler);
     if (ret)
@@ -792,13 +846,50 @@ void app_main()
 
 void generate_random_address(esp_bd_addr_t rand_addr)
 {
-    rand_addr[0] = 0x40;
-
     // Generate random values for the rest of the address
-    for (int i = 1; i < ESP_BD_ADDR_LEN; i++)
+    for (int i = 0; i < ESP_BD_ADDR_LEN; i++)
     {
         rand_addr[i] = esp_random() & 0xFF;
     }
+
+    rand_addr[0] = 0x40;
+}
+
+char *esp_auth_req_to_str(esp_ble_auth_req_t auth_req)
+{
+    char *auth_str = NULL;
+    switch (auth_req)
+    {
+    case ESP_LE_AUTH_NO_BOND:
+        auth_str = "ESP_LE_AUTH_NO_BOND";
+        break;
+    case ESP_LE_AUTH_BOND:
+        auth_str = "ESP_LE_AUTH_BOND";
+        break;
+    case ESP_LE_AUTH_REQ_MITM:
+        auth_str = "ESP_LE_AUTH_REQ_MITM";
+        break;
+    case ESP_LE_AUTH_REQ_BOND_MITM:
+        auth_str = "ESP_LE_AUTH_REQ_BOND_MITM";
+        break;
+    case ESP_LE_AUTH_REQ_SC_ONLY:
+        auth_str = "ESP_LE_AUTH_REQ_SC_ONLY";
+        break;
+    case ESP_LE_AUTH_REQ_SC_BOND:
+        auth_str = "ESP_LE_AUTH_REQ_SC_BOND";
+        break;
+    case ESP_LE_AUTH_REQ_SC_MITM:
+        auth_str = "ESP_LE_AUTH_REQ_SC_MITM";
+        break;
+    case ESP_LE_AUTH_REQ_SC_MITM_BOND:
+        auth_str = "ESP_LE_AUTH_REQ_SC_MITM_BOND";
+        break;
+    default:
+        auth_str = "INVALID BLE AUTH REQ";
+        break;
+    }
+
+    return auth_str;
 }
 
 // void print_char_profile(const struct gatts_char_profile *char_profile)
