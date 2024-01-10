@@ -3,6 +3,6 @@
     "idf.flashType": "UART",
     "idf.port": "/dev/cu.usbserial-0001",
     "files.associations": {
-        "boosted_remote.h": "c"
+        "boosted_board.h": "c"
     }
 }

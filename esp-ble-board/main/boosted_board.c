@@ -10,9 +10,9 @@ static uint8_t adv_config_done = 0;
 #define scan_rsp_config_flag (1 << 1)
 
 static uint8_t raw_adv_data[] = {
-    0x02, 0x01, 0x06,                                                                               // Length 3, Data Type 1 (Flags), Data 1 (LE General Discoverable Mode, BR/EDR Not Supported)
-    0x18, 0x3c, 0x48, 0xe0, 0x0b, 0xba, 0x12, 0x99, 0xe5, 0x11, 0x1f, 0xc6, 0x86, 0x5a, 0xc5, 0x7d, // Length 18, DATA_TYPE_SERVICE_UUIDS_128_BIT_PARTIAL
-    0x09, 0xFF, 0x02, 0x00, 0x02, 0x05, 0x01, 0xFF, 0xFF, 0xFF,                                     // Length 10, DATA_TYPE_MANUFACTURER_SPECIFIC_DATA
+    0x02, 0x01, 0x06,                                                                                           // Length 3, Data Type 1 (Flags), Data 1 (LE General Discoverable Mode, BR/EDR Not Supported)
+    0x11, 0x06, 0x18, 0x3c, 0x48, 0xe0, 0x0b, 0xba, 0x12, 0x99, 0xe5, 0x11, 0x1f, 0xc6, 0x86, 0x5a, 0xc5, 0x7d, // Length 18, DATA_TYPE_SERVICE_UUIDS_128_BIT_PARTIAL
+    0x09, 0xFF, 0x02, 0x00, 0x02, 0x05, 0x01, 0xFF, 0xFF, 0xFF,                                                 // Length 10, DATA_TYPE_MANUFACTURER_SPECIFIC_DATA
 };
 static uint8_t raw_scan_rsp_data[] = {
     0x08, 0xFF, 0x01, 0x2A, 0x0A, 0xA1, 0x69, 0xFF, 0xFF,                                           // Length 9, DATA_TYPE_MANUFACTURER_SPECIFIC_DATA
@@ -122,29 +122,35 @@ static esp_attr_value_t battery_capacity_profile = {
 };
 static uint8_t battery_info_char_1_val[] = {0x00};
 static esp_attr_value_t battery_info_char_1_profile = {
-    .attr_max_len = 0x08,
+    .attr_max_len = 0x01,
     .attr_len = sizeof(battery_info_char_1_val),
     .attr_value = battery_info_char_1_val,
 };
 static uint8_t battery_info_char_2_val[] = {0x00};
 static esp_attr_value_t battery_info_char_2_profile = {
-    .attr_max_len = 0x08,
+    .attr_max_len = 0x01,
     .attr_len = sizeof(battery_info_char_2_val),
     .attr_value = battery_info_char_2_val,
 };
 
-// Define service 2 char values
-static uint8_t svc_2_char_1_val[] = {0x01};
-static esp_attr_value_t svc_2_char_1_profile = {
-    .attr_max_len = 0x08,
-    .attr_len = sizeof(svc_2_char_1_val),
-    .attr_value = svc_2_char_1_val,
+// Define otau char values
+static uint8_t otau_char1_val[] = {0x01};
+static esp_attr_value_t otau_char1_profile = {
+    .attr_max_len = 0x01,
+    .attr_len = sizeof(otau_char1_val),
+    .attr_value = otau_char1_val,
 };
-static uint8_t svc_2_char_4_val[] = {0x07};
-static esp_attr_value_t svc_2_char_4_profile = {
-    .attr_max_len = 0x08,
-    .attr_len = sizeof(svc_2_char_4_val),
-    .attr_value = svc_2_char_4_val,
+static uint8_t otau_char3_val[] = {0x00};
+static esp_attr_value_t otau_char3_profile = {
+    .attr_max_len = 0x01,
+    .attr_len = sizeof(otau_char3_val),
+    .attr_value = otau_char3_val,
+};
+static uint8_t otau_char4_val[] = {0x07};
+static esp_attr_value_t otau_char4_profile = {
+    .attr_max_len = 0x01,
+    .attr_len = sizeof(otau_char4_val),
+    .attr_value = otau_char4_val,
 };
 
 static esp_ble_adv_params_t adv_params = {
@@ -174,8 +180,8 @@ static struct gatts_profile_inst gl_profile_tab[NUM_PROFILES] = {
             },
         },
     },
-    [PROFILE_SERVICE_2_APP_ID] = {
-        .gatts_cb = gatts_profile_service_2_event_handler,
+    [PROFILE_OTAU_APP_ID] = {
+        .gatts_cb = gatts_profile_otau_event_handler,
         .gatts_if = ESP_GATT_IF_NONE, /* Not get the gatt_if, so initial is ESP_GATT_IF_NONE */
 
         .service_id = {
@@ -201,7 +207,7 @@ static struct gatts_profile_inst gl_profile_tab[NUM_PROFILES] = {
                 .uuid = {
                     .len = ESP_UUID_LEN_128,
                     .uuid = {
-                        .uuid128 = {0x65, 0xA8, 0xEA, 0xA8, 0xC6, 0x1F, 0x11, 0xE5, 0x99, 0x12, 0xBA, 0x0B, 0xE0, 0x48, 0x3C, 0x18},
+                        .uuid128 = {0x18, 0x3C, 0x48, 0xE0, 0x0B, 0xBA, 0x12, 0x99, 0xE5, 0x11, 0x1F, 0xC6, 0xA8, 0xEA, 0xA8, 0x65},
                     },
                 },
             },
@@ -217,7 +223,7 @@ static struct gatts_profile_inst gl_profile_tab[NUM_PROFILES] = {
                 .uuid = {
                     .len = ESP_UUID_LEN_128,
                     .uuid = {
-                        .uuid128 = {0x7D, 0xC5, 0x5A, 0x86, 0xC6, 0x1F, 0x11, 0xE5, 0x99, 0x12, 0xBA, 0x0B, 0xE0, 0x48, 0x3C, 0x18},
+                        .uuid128 = {0x18, 0x3C, 0x48, 0xE0, 0x0B, 0xBA, 0x12, 0x99, 0xE5, 0x11, 0x1F, 0xC6, 0x86, 0x5A, 0xC5, 0x7D},
                     },
                 },
             },
@@ -476,19 +482,19 @@ static struct gatts_char_profile gl_svc_1_char_profile_tab[SERVICE_1_PROFILE_NUM
 };
 
 // Define service 2 char profiles
-static struct gatts_char_profile gl_svc_2_char_profile_tab[SERVICE_2_PROFILE_NUM_CHARS] = {
-    [PROFILE_SERVICE_2_1_ID] = {
+static struct gatts_char_profile gl_svc_2_char_profile_tab[OTAU_PROFILE_NUM_CHARS] = {
+    [PROFILE_OTAU_CHAR1_ID] = {
         .char_uuid = {
             .len = ESP_UUID_LEN_128,
             .uuid = {
                 .uuid128 = {0xA5, 0xA5, 0x00, 0x5B, 0x02, 0x00, 0x23, 0x9B, 0xE1, 0x11, 0x02, 0xD1, 0x13, 0x10, 0x00, 0x00},
             },
         },
-        .char_val = &svc_2_char_1_profile,
+        .char_val = &otau_char1_profile,
         .perm = ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
         .property = ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_WRITE,
     },
-    [PROFILE_SERVICE_2_2_ID] = {
+    [PROFILE_OTAU_CHAR2_ID] = {
         .char_uuid = {
             .len = ESP_UUID_LEN_128,
             .uuid = {
@@ -498,24 +504,25 @@ static struct gatts_char_profile gl_svc_2_char_profile_tab[SERVICE_2_PROFILE_NUM
         .perm = ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
         .property = ESP_GATT_CHAR_PROP_BIT_WRITE,
     },
-    [PROFILE_SERVICE_2_3_ID] = {
+    [PROFILE_OTAU_CHAR3_ID] = {
         .char_uuid = {
             .len = ESP_UUID_LEN_128,
             .uuid = {
                 .uuid128 = {0xA5, 0xA5, 0x00, 0x5B, 0x02, 0x00, 0x23, 0x9B, 0xE1, 0x11, 0x02, 0xD1, 0x14, 0x10, 0x00, 0x00},
             },
         },
+        .char_val = &otau_char3_profile,
         .perm = ESP_GATT_PERM_READ,
         .property = ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_NOTIFY,
     },
-    [PROFILE_SERVICE_2_4_ID] = {
+    [PROFILE_OTAU_CHAR4_ID] = {
         .char_uuid = {
             .len = ESP_UUID_LEN_128,
             .uuid = {
                 .uuid128 = {0xA5, 0xA5, 0x00, 0x5B, 0x02, 0x00, 0x23, 0x9B, 0xE1, 0x11, 0x02, 0xD1, 0x11, 0x10, 0x00, 0x00},
             },
         },
-        .char_val = &svc_2_char_4_profile,
+        .char_val = &otau_char4_profile,
         .perm = ESP_GATT_PERM_READ,
         .property = ESP_GATT_CHAR_PROP_BIT_READ,
     },
@@ -723,13 +730,13 @@ static void gatts_profile_service_1_event_handler(esp_gatts_cb_event_t event, es
     }
 }
 
-static void gatts_profile_service_2_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param)
+static void gatts_profile_otau_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param)
 {
     switch (event)
     {
     case ESP_GATTS_REG_EVT:
         ESP_LOGI(GATTS_TAG, "REGISTER_APP_EVT, status %d, app_id %d", param->reg.status, param->reg.app_id);
-        esp_err_t raw_svc_ret = esp_ble_gatts_create_service(gatts_if, &gl_profile_tab[PROFILE_SERVICE_2_APP_ID].service_id, GATTS_SERVICE_2_NUM_HANDLE);
+        esp_err_t raw_svc_ret = esp_ble_gatts_create_service(gatts_if, &gl_profile_tab[PROFILE_OTAU_APP_ID].service_id, GATTS_OTAU_NUM_HANDLE);
         if (raw_svc_ret)
         {
             ESP_LOGE(GATTS_TAG, "create service failed, error code = %x", raw_svc_ret);
@@ -738,14 +745,14 @@ static void gatts_profile_service_2_event_handler(esp_gatts_cb_event_t event, es
     case ESP_GATTS_CREATE_EVT:
         ESP_LOGI(GATTS_TAG, "CREATE_SERVICE_EVT, status %d,  service_handle %d", param->create.status, param->create.service_handle);
 
-        gl_profile_tab[PROFILE_SERVICE_2_APP_ID].service_handle = param->create.service_handle;
-        esp_ble_gatts_start_service(gl_profile_tab[PROFILE_SERVICE_2_APP_ID].service_handle);
+        gl_profile_tab[PROFILE_OTAU_APP_ID].service_handle = param->create.service_handle;
+        esp_ble_gatts_start_service(gl_profile_tab[PROFILE_OTAU_APP_ID].service_handle);
 
         int idx;
-        for (idx = 0; idx < SERVICE_2_PROFILE_NUM_CHARS; idx++)
+        for (idx = 0; idx < OTAU_PROFILE_NUM_CHARS; idx++)
         {
             // print_char_profile(&gl_svc_2_char_profile_tab[idx]);
-            esp_err_t add_char_ret = esp_ble_gatts_add_char(gl_profile_tab[PROFILE_SERVICE_2_APP_ID].service_handle,
+            esp_err_t add_char_ret = esp_ble_gatts_add_char(gl_profile_tab[PROFILE_OTAU_APP_ID].service_handle,
                                                             &gl_svc_2_char_profile_tab[idx].char_uuid,
                                                             gl_svc_2_char_profile_tab[idx].perm,
                                                             gl_svc_2_char_profile_tab[idx].property,
@@ -778,14 +785,26 @@ static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param
         adv_config_done &= (~adv_config_flag);
         if (adv_config_done == 0)
         {
+            ESP_LOGI(GATTS_TAG, "advertisting data set!");
             esp_ble_gap_start_advertising(&adv_params);
+            ESP_LOGI(GATTS_TAG, "advertising started!");
+        }
+        else
+        {
+            ESP_LOGI(GATTS_TAG, "advertisting data set!");
         }
         break;
     case ESP_GAP_BLE_SCAN_RSP_DATA_RAW_SET_COMPLETE_EVT:
         adv_config_done &= (~scan_rsp_config_flag);
         if (adv_config_done == 0)
         {
+            ESP_LOGI(GATTS_TAG, "scan response data set!");
             esp_ble_gap_start_advertising(&adv_params);
+            ESP_LOGI(GATTS_TAG, "advertising started!");
+        }
+        else
+        {
+            ESP_LOGI(GATTS_TAG, "scan response data set!");
         }
         break;
     case ESP_GAP_BLE_ADV_START_COMPLETE_EVT:
@@ -815,7 +834,6 @@ static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param
                  param->update_conn_params.timeout);
         break;
     case ESP_GAP_BLE_SCAN_RESULT_EVT:
-
         break;
     default:
         ESP_LOGI(GATTS_TAG, "got some potential information %d...", event);
@@ -925,7 +943,7 @@ void app_main()
         return;
     }
 
-    ret = esp_ble_gatts_app_register(PROFILE_SERVICE_2_APP_ID);
+    ret = esp_ble_gatts_app_register(PROFILE_OTAU_APP_ID);
     if (ret)
     {
         ESP_LOGE(GATTS_TAG, "gatts app register error, error code = %x", ret);
@@ -960,7 +978,7 @@ void app_main()
         return;
     }
 
-    esp_ble_gap_start_scanning(1000);
+    // esp_ble_gap_start_scanning(1000);
 }
 
 // void print_char_profile(const struct gatts_char_profile *char_profile)

@@ -38,11 +38,11 @@ struct gatts_profile_inst
 
 // Define all the profiles
 #define NUM_PROFILES 5
-#define PROFILE_SERVICE_1_APP_ID 0
-#define PROFILE_SERVICE_2_APP_ID 1
-#define PROFILE_BATTERY_INFO_APP_ID 2
-#define PROFILE_BOARD_INFO_APP_ID 3
-#define PROFILE_DEVICE_INFO_APP_ID 4
+#define PROFILE_OTAU_APP_ID 0
+#define PROFILE_DEVICE_INFO_APP_ID 1
+#define PROFILE_BOARD_INFO_APP_ID 2
+#define PROFILE_SERVICE_1_APP_ID 3
+#define PROFILE_BATTERY_INFO_APP_ID 4
 
 #define BOARD_INFO_PROFILE_NUM_CHARS 10
 #define GATTS_BOARD_INFO_NUM_HANDLE 21
@@ -68,12 +68,12 @@ struct gatts_profile_inst
 #define GATTS_SERVICE_1_NUM_HANDLE 3
 #define PROFILE_SERVICE_1_1_ID 0
 
-#define SERVICE_2_PROFILE_NUM_CHARS 4
-#define GATTS_SERVICE_2_NUM_HANDLE 9
-#define PROFILE_SERVICE_2_1_ID 0
-#define PROFILE_SERVICE_2_2_ID 1
-#define PROFILE_SERVICE_2_3_ID 2
-#define PROFILE_SERVICE_2_4_ID 3
+#define OTAU_PROFILE_NUM_CHARS 4
+#define GATTS_OTAU_NUM_HANDLE 9
+#define PROFILE_OTAU_CHAR1_ID 0
+#define PROFILE_OTAU_CHAR2_ID 1
+#define PROFILE_OTAU_CHAR3_ID 2
+#define PROFILE_OTAU_CHAR4_ID 3
 
 #define DEVICE_INFO_PROFILE_NUM_CHARS 5
 #define GATTS_DEVICE_INFO_NUM_HANDLE 11
@@ -88,6 +88,6 @@ static void gatts_profile_battery_info_event_handler(esp_gatts_cb_event_t event,
 static void gatts_profile_board_info_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
 static void gatts_profile_device_info_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
 static void gatts_profile_service_1_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
-static void gatts_profile_service_2_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
+static void gatts_profile_otau_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
 
 void print_char_profile(const struct gatts_char_profile *char_profile);
