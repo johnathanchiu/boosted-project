@@ -3,6 +3,15 @@
     "idf.flashType": "UART",
     "idf.port": "/dev/cu.usbserial-0001",
     "files.associations": {
-        "boosted_board.h": "c"
+        "boosted_board.h": "c",
+        "esp_gattc_api.h": "c",
+        "esp_bt_main.h": "c",
+        "esp_bt_defs.h": "c",
+        "esp_system.h": "c",
+        "string.h": "c",
+        "stdio.h": "c",
+        "esp_err.h": "c",
+        "stdlib.h": "c",
+        "esp_gatts_api.h": "c"
     }
 }

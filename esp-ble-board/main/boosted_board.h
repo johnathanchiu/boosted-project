@@ -6,10 +6,11 @@
 #include "nvs_flash.h"
 #include "esp_bt.h"
 #include "esp_gap_ble_api.h"
-#include "esp_gatts_api.h"
 #include "esp_bt_defs.h"
 #include "esp_bt_main.h"
 #include "esp_gatt_common_api.h"
+#include "esp_gatts_api.h"
+#include "esp_gattc_api.h"
 
 struct gatts_char_profile
 {
@@ -28,7 +29,10 @@ struct gatts_profile_inst
     uint16_t service_handle;
     esp_gatt_srvc_id_t service_id;
 
-    // uint16_t conn_id;
+    esp_gattc_cb_t gattc_cb;
+    uint16_t gattc_if;
+    uint16_t conn_id;
+    esp_bd_addr_t remote_bda;
     // uint16_t descr_handle;
     // esp_bt_uuid_t descr_uuid;
 };
@@ -84,6 +88,7 @@ struct gatts_profile_inst
 #define PROFILE_DEVICE_INFO_CHAR_PNP_ID 4
 
 // Define the callback handler functions
+static void gattc_profile_board_info_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_t gattc_if, esp_ble_gattc_cb_param_t *param);
 static void gatts_profile_battery_info_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
 static void gatts_profile_board_info_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
 static void gatts_profile_device_info_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
