@@ -3,13 +3,13 @@
 #include <BLEScan.h>
 
 
-#define MY_DEVICE_UUID "B20BD750-A820-923B-7012-7A009F340E55"
+#define BOARD_ADVERTISED_UUID "7DC55A86-C61F-11E5-9912-BA0BE0483C18"
 #define CONTROLLER_ADVERTISED_SERVICE "F4C4772C-0056-11E6-8D22-5E5517507C66"
 
 class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks {
   void onResult(BLEAdvertisedDevice advertisedDevice) {
 
-    if (advertisedDevice.isAdvertisingService(BLEUUID(CONTROLLER_ADVERTISED_SERVICE))) {
+    if (advertisedDevice.isAdvertisingService(BLEUUID(CONTROLLER_ADVERTISED_SERVICE)) || advertisedDevice.isAdvertisingService(BLEUUID(BOARD_ADVERTISED_UUID))) {
       Serial.print("Device Name: ");
       Serial.println(advertisedDevice.getName().c_str());
       Serial.print("  Address: ");
