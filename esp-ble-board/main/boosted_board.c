@@ -151,9 +151,7 @@ static esp_ble_adv_params_t adv_params = {
     .adv_int_min = 0x20,
     .adv_int_max = 0x40,
     .adv_type = ADV_TYPE_IND,
-    .own_addr_type = BLE_ADDR_TYPE_PUBLIC,
-    //.peer_addr            =
-    //.peer_addr_type       =
+    .own_addr_type = BLE_ADDR_TYPE_RPA_RANDOM,
     .channel_map = ADV_CHNL_ALL,
     .adv_filter_policy = ADV_FILTER_ALLOW_SCAN_ANY_CON_ANY,
 };
@@ -544,7 +542,6 @@ static void gatts_profile_battery_info_event_handler(esp_gatts_cb_event_t event,
         int idx;
         for (idx = 0; idx < BATTERY_INFO_PROFILE_NUM_CHARS; idx++)
         {
-            // print_char_profile(&gl_dinfo_svc_char_profile_tab[idx]);
             esp_err_t add_char_ret = esp_ble_gatts_add_char(gl_profile_tab[PROFILE_BATTERY_INFO_APP_ID].service_handle,
                                                             &gl_battery_info_svc_char_profile_tab[idx].char_uuid,
                                                             gl_battery_info_svc_char_profile_tab[idx].perm,
@@ -747,7 +744,7 @@ static void gatts_profile_service_2_event_handler(esp_gatts_cb_event_t event, es
         int idx;
         for (idx = 0; idx < SERVICE_2_PROFILE_NUM_CHARS; idx++)
         {
-            print_char_profile(&gl_svc_2_char_profile_tab[idx]);
+            // print_char_profile(&gl_svc_2_char_profile_tab[idx]);
             esp_err_t add_char_ret = esp_ble_gatts_add_char(gl_profile_tab[PROFILE_SERVICE_2_APP_ID].service_handle,
                                                             &gl_svc_2_char_profile_tab[idx].char_uuid,
                                                             gl_svc_2_char_profile_tab[idx].perm,
@@ -816,6 +813,9 @@ static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param
                  param->update_conn_params.conn_int,
                  param->update_conn_params.latency,
                  param->update_conn_params.timeout);
+        break;
+    case ESP_GAP_BLE_SCAN_RESULT_EVT:
+
         break;
     default:
         ESP_LOGI(GATTS_TAG, "got some potential information %d...", event);
@@ -898,6 +898,13 @@ void app_main()
         return;
     }
 
+    ret = esp_ble_gap_config_local_privacy(true);
+    if (ret)
+    {
+        ESP_LOGE(GATTS_TAG, "privacy set failed, error code = %x", ret);
+        return;
+    }
+
     ret = esp_ble_gatts_register_callback(gatts_event_handler);
     if (ret)
     {
@@ -950,23 +957,25 @@ void app_main()
     if (local_mtu_ret)
     {
         ESP_LOGE(GATTS_TAG, "set local  MTU failed, error code = %x", local_mtu_ret);
+        return;
     }
-    return;
+
+    esp_ble_gap_start_scanning(1000);
 }
 
-void print_char_profile(const struct gatts_char_profile *char_profile)
-{
-    if (char_profile->char_val != NULL)
-    {
-        printf("char_val: %p, len: %d, content: ", (void *)char_profile->char_val, char_profile->char_val->attr_len);
-        for (int i = 0; i < char_profile->char_val->attr_len; i++)
-        {
-            printf("%02X ", char_profile->char_val->attr_value[i]);
-        }
-        printf("\n");
-    }
-    else
-    {
-        printf("char_val is NULL\n");
-    }
-}
+// void print_char_profile(const struct gatts_char_profile *char_profile)
+// {
+//     if (char_profile->char_val != NULL)
+//     {
+//         printf("char_val: %p, len: %d, content: ", (void *)char_profile->char_val, char_profile->char_val->attr_len);
+//         for (int i = 0; i < char_profile->char_val->attr_len; i++)
+//         {
+//             printf("%02X ", char_profile->char_val->attr_value[i]);
+//         }
+//         printf("\n");
+//     }
+//     else
+//     {
+//         printf("char_val is NULL\n");
+//     }
+// }

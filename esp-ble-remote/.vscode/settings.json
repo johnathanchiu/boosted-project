@@ -1,7 +1,7 @@
 {
     "idf.adapterTargetName": "esp32",
     "idf.flashType": "UART",
-    "idf.port": "/dev/cu.usbserial-5",
+    "idf.port": "/dev/cu.usbserial-0001",
     "files.associations": {
         "boosted_remote.h": "c",
         "sdkconfig.h": "c",
