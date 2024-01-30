@@ -59,6 +59,15 @@ static esp_attr_value_t controls_char2_profile = {
     .attr_value = controls_char2_val,
 };
 
+static gatts_char_descr throttle_char_descr = {
+    .descr_uuid = {
+        .len = ESP_UUID_LEN_16,
+        .uuid = {
+            .uuid16 = ESP_GATT_UUID_CHAR_CLIENT_CONFIG,
+        },
+    },
+};
+
 // Define device info char values
 static uint8_t devinfo_model_num_val[] = {0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30};
 static esp_attr_value_t devinfo_model_num_char_profile = {
@@ -100,7 +109,7 @@ static esp_attr_value_t devinfo_pnp_char_profile = {
 // Define connectivity char values
 static uint8_t connectivity_char2_val[] = {0x42, 0x6F, 0x6F, 0x73, 0x74, 0x65, 0x64, 0x52, 0x6D, 0x74, 0x39, 0x39, 0x41, 0x46, 0x31, 0x31, 0x43, 0x36, 0x00};
 static esp_attr_value_t connectivity_char2_profile = {
-    .attr_max_len = 0x98,
+    .attr_max_len = 0x13,
     .attr_len = sizeof(connectivity_char2_val),
     .attr_value = connectivity_char2_val,
 };
@@ -110,13 +119,28 @@ static esp_ble_adv_params_t adv_params = {
     .adv_int_max = 0x40,
     .adv_type = ADV_TYPE_IND,
     .own_addr_type = BLE_ADDR_TYPE_RPA_RANDOM,
-    // .peer_addr_type = BLE_ADDR_TYPE_RPA_RANDOM,
     .channel_map = ADV_CHNL_ALL,
     .adv_filter_policy = ADV_FILTER_ALLOW_SCAN_ANY_CON_ANY,
 };
 
 // Define all the services
 static struct gatts_profile_inst gl_profile_tab[NUM_PROFILES] = {
+    [PROFILE_CONTROLS_APP_ID] = {
+        .gatts_cb = gatts_profile_controls_event_handler,
+        .gatts_if = ESP_GATT_IF_NONE, /* Not get the gatt_if, so initial is ESP_GATT_IF_NONE */
+        .service_id = {
+            .is_primary = true,
+            .id = {
+                .inst_id = 0x00,
+                .uuid = {
+                    .len = ESP_UUID_LEN_128,
+                    .uuid = {
+                        .uuid128 = {0x78, 0xFE, 0xDE, 0x05, 0x1D, 0x3E, 0x48, 0xA1, 0xE6, 0x11, 0xD4, 0x0C, 0xA0, 0x5D, 0xC0, 0xAF},
+                    },
+                },
+            },
+        },
+    },
     [PROFILE_CONNECTIVITY_APP_ID] = {
         .gatts_cb = gatts_profile_connectivity_event_handler,
         .gatts_if = ESP_GATT_IF_NONE, /* Not get the gatt_if, so initial is ESP_GATT_IF_NONE */
@@ -144,22 +168,6 @@ static struct gatts_profile_inst gl_profile_tab[NUM_PROFILES] = {
                     .len = ESP_UUID_LEN_16,
                     .uuid = {
                         .uuid16 = 0x180A,
-                    },
-                },
-            },
-        },
-    },
-    [PROFILE_CONTROLS_APP_ID] = {
-        .gatts_cb = gatts_profile_controls_event_handler,
-        .gatts_if = ESP_GATT_IF_NONE, /* Not get the gatt_if, so initial is ESP_GATT_IF_NONE */
-        .service_id = {
-            .is_primary = true,
-            .id = {
-                .inst_id = 0x00,
-                .uuid = {
-                    .len = ESP_UUID_LEN_128,
-                    .uuid = {
-                        .uuid128 = {0x78, 0xFE, 0xDE, 0x05, 0x1D, 0x3E, 0x48, 0xA1, 0xE6, 0x11, 0xD4, 0x0C, 0xA0, 0x5D, 0xC0, 0xAF},
                     },
                 },
             },
@@ -232,26 +240,17 @@ static struct gatts_char_profile gl_otau_svc_char_profile_tab[OTAU_PROFILE_NUM_C
 
 // Define controls char profiles
 static struct gatts_char_profile gl_controls_svc_char_profile_tab[CONTROLS_PROFILE_NUM_CHARS] = {
-    [PROFILE_CONTROLS_CHAR1_ID] = {
+    [PROFILE_CONTROLS_THROTTLE_ID] = {
         .char_uuid = {
             .len = ESP_UUID_LEN_128,
             .uuid = {
-                .uuid128 = {0x78, 0xFE, 0xDE, 0x05, 0x1D, 0x3E, 0x48, 0xA1, 0xE6, 0x11, 0xD4, 0x0C, 0x3F, 0x65, 0xC0, 0xAF},
+                .uuid128 = {0x78, 0xFE, 0xDE, 0x05, 0x1D, 0x3E, 0x48, 0xA1, 0xE6, 0x11, 0xD4, 0x0C, 0x3E, 0x65, 0xC0, 0xAF},
             },
         },
-        .perm = ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
-        .property = ESP_GATT_CHAR_PROP_BIT_WRITE,
-    },
-    [PROFILE_CONTROLS_CHAR2_ID] = {
-        .char_uuid = {
-            .len = ESP_UUID_LEN_128,
-            .uuid = {
-                .uuid128 = {0x78, 0xFE, 0xDE, 0x05, 0x1D, 0x3E, 0x48, 0xA1, 0xE6, 0x11, 0xD4, 0x0C, 0x40, 0x65, 0xC0, 0xAF},
-            },
-        },
-        .char_val = &controls_char2_profile,
+        .char_val = &controls_throttle_char_profile,
         .perm = ESP_GATT_PERM_READ,
-        .property = ESP_GATT_CHAR_PROP_BIT_READ,
+        .property = ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_NOTIFY,
+        .descr = &throttle_char_descr,
     },
     [PROFILE_CONTROLS_TRIGGER_ID] = {
         .char_uuid = {
@@ -264,18 +263,27 @@ static struct gatts_char_profile gl_controls_svc_char_profile_tab[CONTROLS_PROFI
         .perm = ESP_GATT_PERM_READ,
         .property = ESP_GATT_CHAR_PROP_BIT_READ,
     },
-    [PROFILE_CONTROLS_THROTTLE_ID] = {
+    [PROFILE_CONTROLS_CHAR1_ID] = {
         .char_uuid = {
             .len = ESP_UUID_LEN_128,
             .uuid = {
-                .uuid128 = {0x78, 0xFE, 0xDE, 0x05, 0x1D, 0x3E, 0x48, 0xA1, 0xE6, 0x11, 0xD4, 0x0C, 0x3E, 0x65, 0xC0, 0xAF},
+                .uuid128 = {0x78, 0xFE, 0xDE, 0x05, 0x1D, 0x3E, 0x48, 0xA1, 0xE6, 0x11, 0xD4, 0x0C, 0x3F, 0x65, 0xC0, 0xAF},
             },
         },
-        .char_val = &controls_throttle_char_profile,
-        .perm = ESP_GATT_PERM_READ,
-        .property = ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_NOTIFY,
+        .perm = ESP_GATT_PERM_WRITE | ESP_GATT_PERM_READ,
+        .property = ESP_GATT_CHAR_PROP_BIT_WRITE_NR,
     },
-
+    [PROFILE_CONTROLS_CHAR2_ID] = {
+        .char_uuid = {
+            .len = ESP_UUID_LEN_128,
+            .uuid = {
+                .uuid128 = {0x78, 0xFE, 0xDE, 0x05, 0x1D, 0x3E, 0x48, 0xA1, 0xE6, 0x11, 0xD4, 0x0C, 0x40, 0x65, 0xC0, 0xAF},
+            },
+        },
+        .char_val = &controls_char2_profile,
+        .perm = ESP_GATT_PERM_READ,
+        .property = ESP_GATT_CHAR_PROP_BIT_READ,
+    },
 };
 
 // Define device info char profiles
@@ -284,7 +292,7 @@ static struct gatts_char_profile gl_dinfo_svc_char_profile_tab[DEVICE_INFO_PROFI
         .char_uuid = {
             .len = ESP_UUID_LEN_16,
             .uuid = {
-                .uuid16 = 0x2A24,
+                .uuid16 = ESP_GATT_UUID_MODEL_NUMBER_STR,
             },
         },
         .char_val = &devinfo_model_num_char_profile,
@@ -295,7 +303,7 @@ static struct gatts_char_profile gl_dinfo_svc_char_profile_tab[DEVICE_INFO_PROFI
         .char_uuid = {
             .len = ESP_UUID_LEN_16,
             .uuid = {
-                .uuid16 = 0x2A29,
+                .uuid16 = ESP_GATT_UUID_MANU_NAME,
             },
         },
         .char_val = &devinfo_manufacturer_name_char_profile,
@@ -306,7 +314,7 @@ static struct gatts_char_profile gl_dinfo_svc_char_profile_tab[DEVICE_INFO_PROFI
         .char_uuid = {
             .len = ESP_UUID_LEN_16,
             .uuid = {
-                .uuid16 = 0x2A25,
+                .uuid16 = ESP_GATT_UUID_SERIAL_NUMBER_STR,
             },
         },
         .char_val = &devinfo_serial_num_char_profile,
@@ -317,7 +325,7 @@ static struct gatts_char_profile gl_dinfo_svc_char_profile_tab[DEVICE_INFO_PROFI
         .char_uuid = {
             .len = ESP_UUID_LEN_16,
             .uuid = {
-                .uuid16 = 0x2A27,
+                .uuid16 = ESP_GATT_UUID_HW_VERSION_STR,
             },
         },
         .char_val = &devinfo_hw_revision_char_profile,
@@ -328,7 +336,7 @@ static struct gatts_char_profile gl_dinfo_svc_char_profile_tab[DEVICE_INFO_PROFI
         .char_uuid = {
             .len = ESP_UUID_LEN_16,
             .uuid = {
-                .uuid16 = 0x2A26,
+                .uuid16 = ESP_GATT_UUID_FW_VERSION_STR,
             },
         },
         .char_val = &devinfo_fw_revision_char_profile,
@@ -339,7 +347,7 @@ static struct gatts_char_profile gl_dinfo_svc_char_profile_tab[DEVICE_INFO_PROFI
         .char_uuid = {
             .len = ESP_UUID_LEN_16,
             .uuid = {
-                .uuid16 = 0x2A50,
+                .uuid16 = ESP_GATT_UUID_PNP_ID,
             },
         },
         .char_val = &devinfo_pnp_char_profile,
@@ -358,7 +366,7 @@ static struct gatts_char_profile gl_conn_svc_char_profile_tab[CONNECTIVITY_PROFI
             },
         },
         .perm = ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
-        .property = ESP_GATT_CHAR_PROP_BIT_WRITE,
+        .property = ESP_GATT_CHAR_PROP_BIT_WRITE | ESP_GATT_CHAR_PROP_BIT_WRITE_NR,
     },
     [PROFILE_CONNECTIVITY_CHAR2_ID] = {
         .char_uuid = {
@@ -368,7 +376,7 @@ static struct gatts_char_profile gl_conn_svc_char_profile_tab[CONNECTIVITY_PROFI
             },
         },
         .perm = ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
-        .property = ESP_GATT_CHAR_PROP_BIT_WRITE,
+        .property = ESP_GATT_CHAR_PROP_BIT_WRITE | ESP_GATT_CHAR_PROP_BIT_WRITE_NR,
     },
     [PROFILE_CONNECTIVITY_CHAR3_ID] = {
         .char_uuid = {
@@ -378,7 +386,7 @@ static struct gatts_char_profile gl_conn_svc_char_profile_tab[CONNECTIVITY_PROFI
             },
         },
         .perm = ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
-        .property = ESP_GATT_CHAR_PROP_BIT_WRITE,
+        .property = ESP_GATT_CHAR_PROP_BIT_WRITE | ESP_GATT_CHAR_PROP_BIT_WRITE_NR,
     },
     [PROFILE_CONNECTIVITY_CHAR4_ID] = {
         .char_uuid = {
@@ -388,7 +396,7 @@ static struct gatts_char_profile gl_conn_svc_char_profile_tab[CONNECTIVITY_PROFI
             },
         },
         .perm = ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
-        .property = ESP_GATT_CHAR_PROP_BIT_WRITE,
+        .property = ESP_GATT_CHAR_PROP_BIT_WRITE | ESP_GATT_CHAR_PROP_BIT_WRITE_NR,
     },
     [PROFILE_CONNECTIVITY_CHAR5_ID] = {
         .char_uuid = {
@@ -398,7 +406,7 @@ static struct gatts_char_profile gl_conn_svc_char_profile_tab[CONNECTIVITY_PROFI
             },
         },
         .perm = ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
-        .property = ESP_GATT_CHAR_PROP_BIT_WRITE,
+        .property = ESP_GATT_CHAR_PROP_BIT_WRITE | ESP_GATT_CHAR_PROP_BIT_WRITE_NR,
     },
     [PROFILE_CONNECTIVITY_CHAR6_ID] = {
         .char_uuid = {
@@ -409,7 +417,7 @@ static struct gatts_char_profile gl_conn_svc_char_profile_tab[CONNECTIVITY_PROFI
         },
         .char_val = &connectivity_char2_profile,
         .perm = ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
-        .property = ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_WRITE,
+        .property = ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_WRITE | ESP_GATT_CHAR_PROP_BIT_WRITE_NR,
     },
 
 };
@@ -420,6 +428,24 @@ static void gatts_profile_otau_event_handler(esp_gatts_cb_event_t event, esp_gat
     {
     case ESP_GATTS_REG_EVT:
         ESP_LOGI(GATTS_TAG, "REGISTER_APP_EVT, status %d, app_id %d", param->reg.status, param->reg.app_id);
+
+        esp_err_t set_dev_name_ret = esp_bt_dev_set_device_name(DEVICE_NAME);
+        if (set_dev_name_ret)
+        {
+            ESP_LOGE(GATTS_TAG, "set device name failed, error code = %x", set_dev_name_ret);
+        }
+        esp_err_t raw_scan_ret = esp_ble_gap_config_scan_rsp_data_raw(raw_scan_rsp_data, sizeof(raw_scan_rsp_data));
+        if (raw_scan_ret)
+        {
+            ESP_LOGE(GATTS_TAG, "config raw scan rsp data failed, error code = %x", raw_scan_ret);
+        }
+        adv_config_done |= scan_rsp_config_flag;
+        esp_err_t raw_adv_ret = esp_ble_gap_config_adv_data_raw(raw_adv_data, sizeof(raw_adv_data));
+        if (raw_adv_ret)
+        {
+            ESP_LOGE(GATTS_TAG, "config raw adv data failed, error code = %x ", raw_adv_ret);
+        }
+        adv_config_done |= adv_config_flag;
         esp_err_t raw_svc_ret = esp_ble_gatts_create_service(gatts_if, &gl_profile_tab[PROFILE_OTAU_APP_ID].service_id, GATTS_OTAU_NUM_HANDLE);
         if (raw_svc_ret)
         {
@@ -452,10 +478,11 @@ static void gatts_profile_otau_event_handler(esp_gatts_cb_event_t event, esp_gat
         }
         break;
     case ESP_GATTS_ADD_CHAR_EVT:
-        ESP_LOGI(GATTS_TAG, "ADD_CHAR_EVT, status %d, attr_handle %d, service_handle %d",
+        ESP_LOGI(GATTS_TAG, "ADD_CHAR_EVT, status %d,  attr_handle 0x%2x, service_handle 0x%2x",
                  param->add_char.status, param->add_char.attr_handle, param->add_char.service_handle);
         break;
     default:
+        ESP_LOGI(GATTS_TAG, "otau info, something happened %d", event);
         break;
     }
 }
@@ -482,6 +509,10 @@ static void gatts_profile_controls_event_handler(esp_gatts_cb_event_t event, esp
         for (idx = 0; idx < CONTROLS_PROFILE_NUM_CHARS; idx++)
         {
             // print_char_profile(&gl_dinfo_svc_char_profile_tab[idx]);
+            if (gl_controls_svc_char_profile_tab[idx].char_val == NULL)
+            {
+                ESP_LOGI(GATTS_TAG, "found null char value here");
+            }
             esp_err_t add_char_ret = esp_ble_gatts_add_char(gl_profile_tab[PROFILE_CONTROLS_APP_ID].service_handle,
                                                             &gl_controls_svc_char_profile_tab[idx].char_uuid,
                                                             gl_controls_svc_char_profile_tab[idx].perm,
@@ -491,17 +522,39 @@ static void gatts_profile_controls_event_handler(esp_gatts_cb_event_t event, esp
                                                                                                                            .auto_rsp = ESP_GATT_AUTO_RSP,
                                                                                                                        }
                                                                                                                      : NULL);
+
             if (add_char_ret)
             {
                 ESP_LOGE(GATTS_TAG, "add char failed, error code =%x", add_char_ret);
             }
+            else // success case
+            {
+                if (gl_controls_svc_char_profile_tab[idx].descr)
+                {
+                    esp_err_t add_descr_ret = esp_ble_gatts_add_char_descr(gl_profile_tab[PROFILE_CONTROLS_APP_ID].service_handle,
+                                                                           &gl_controls_svc_char_profile_tab[idx].descr->descr_uuid,
+                                                                           //    ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
+                                                                           ESP_GATT_PERM_READ,
+                                                                           NULL,
+                                                                           ESP_GATT_RSP_BY_APP);
+                    if (add_descr_ret)
+                    {
+                        ESP_LOGE(GATTS_TAG, "add char descr failed, error code =%x", add_descr_ret);
+                    }
+                }
+            }
         }
         break;
     case ESP_GATTS_ADD_CHAR_EVT:
-        ESP_LOGI(GATTS_TAG, "ADD_CHAR_EVT, status %d, attr_handle %d, service_handle %d",
+        ESP_LOGI(GATTS_TAG, "ADD_CHAR_EVT, status %d, attr_handle 0x%2x, service_handle 0x%2x",
                  param->add_char.status, param->add_char.attr_handle, param->add_char.service_handle);
         break;
+    case ESP_GATTS_ADD_CHAR_DESCR_EVT:
+        ESP_LOGI(GATTS_TAG, "ADD_CHAR_DESCR_EVT, status 0x%2x, attr_handle 0x%2x, service_handle 0x%2x",
+                 param->add_char_descr.status, param->add_char_descr.attr_handle, param->add_char_descr.service_handle);
+        break;
     default:
+        ESP_LOGI(GATTS_TAG, "controls info, something happened %d", event);
         break;
     }
 }
@@ -511,7 +564,7 @@ static void gatts_profile_device_info_event_handler(esp_gatts_cb_event_t event, 
     switch (event)
     {
     case ESP_GATTS_REG_EVT:
-        ESP_LOGI(GATTS_TAG, "REGISTER_APP_EVT, status %d, app_id %d", param->reg.status, param->reg.app_id);
+        ESP_LOGI(GATTS_TAG, "REGISTER_APP_EVT, interface %d, status %d, app_id %d", gatts_if, param->reg.status, param->reg.app_id);
         esp_err_t raw_svc_ret = esp_ble_gatts_create_service(gatts_if, &gl_profile_tab[PROFILE_DEVICE_INFO_APP_ID].service_id, GATTS_DEVICE_INFO_NUM_HANDLE);
         if (raw_svc_ret)
         {
@@ -544,10 +597,11 @@ static void gatts_profile_device_info_event_handler(esp_gatts_cb_event_t event, 
         }
         break;
     case ESP_GATTS_ADD_CHAR_EVT:
-        ESP_LOGI(GATTS_TAG, "ADD_CHAR_EVT, status %d, attr_handle %d, service_handle %d",
+        ESP_LOGI(GATTS_TAG, "ADD_CHAR_EVT, status %d, attr_handle 0x%2x, service_handle 0x%2x",
                  param->add_char.status, param->add_char.attr_handle, param->add_char.service_handle);
         break;
     default:
+        ESP_LOGI(GATTS_TAG, "device info, something happened %d", event);
         break;
     }
 }
@@ -558,24 +612,6 @@ static void gatts_profile_connectivity_event_handler(esp_gatts_cb_event_t event,
     {
     case ESP_GATTS_REG_EVT:
         ESP_LOGI(GATTS_TAG, "REGISTER_APP_EVT, status %d, app_id %d", param->reg.status, param->reg.app_id);
-
-        esp_err_t set_dev_name_ret = esp_bt_dev_set_device_name(DEVICE_NAME);
-        if (set_dev_name_ret)
-        {
-            ESP_LOGE(GATTS_TAG, "set device name failed, error code = %x", set_dev_name_ret);
-        }
-        esp_err_t raw_scan_ret = esp_ble_gap_config_scan_rsp_data_raw(raw_scan_rsp_data, sizeof(raw_scan_rsp_data));
-        if (raw_scan_ret)
-        {
-            ESP_LOGE(GATTS_TAG, "config raw scan rsp data failed, error code = %x", raw_scan_ret);
-        }
-        adv_config_done |= scan_rsp_config_flag;
-        esp_err_t raw_adv_ret = esp_ble_gap_config_adv_data_raw(raw_adv_data, sizeof(raw_adv_data));
-        if (raw_adv_ret)
-        {
-            ESP_LOGE(GATTS_TAG, "config raw adv data failed, error code = %x ", raw_adv_ret);
-        }
-        adv_config_done |= adv_config_flag;
         esp_err_t raw_svc_ret = esp_ble_gatts_create_service(gatts_if, &gl_profile_tab[PROFILE_CONNECTIVITY_APP_ID].service_id, GATTS_CONNECTIVITY_NUM_HANDLE);
         if (raw_svc_ret)
         {
@@ -609,10 +645,24 @@ static void gatts_profile_connectivity_event_handler(esp_gatts_cb_event_t event,
         }
         break;
     case ESP_GATTS_ADD_CHAR_EVT:
-        ESP_LOGI(GATTS_TAG, "ADD_CHAR_EVT, status %d, attr_handle %d, service_handle %d",
+        ESP_LOGI(GATTS_TAG, "ADD_CHAR_EVT, status %d, attr_handle 0x%2x, service_handle 0x%2x",
                  param->add_char.status, param->add_char.attr_handle, param->add_char.service_handle);
         break;
+    case ESP_GATTS_WRITE_EVT:
+        ESP_LOGI(GATTS_TAG, "WRITE_EVT, conn_id %d, trans_id %" PRIu32 ", handle %d", param->write.conn_id, param->write.trans_id, param->write.handle);
+        ESP_LOG_BUFFER_HEX(GATTS_TAG, param->write.value, param->write.len);
+
+        // if (param->write.need_rsp)
+        // {
+        //     ESP_LOGI(GATTS_TAG, "Response is needed for this write operation");
+        // }
+        // else
+        // {
+        //     ESP_LOGI(GATTS_TAG, "No response is needed for this write operation");
+        // }
+        break;
     default:
+        ESP_LOGI(GATTS_TAG, "connectivity handler, something happened %d", event);
         break;
     }
 }
@@ -680,12 +730,16 @@ static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param
         esp_ble_gap_security_rsp(param->ble_security.ble_req.bd_addr, true); // Accept the security request
         break;
     case ESP_GAP_BLE_KEY_EVT:
-        ESP_LOGI(GATTS_TAG, "BLE_KEY_EVT, key exchange event with key type %d", param->ble_security.ble_key.key_type);
+        ESP_LOGI(GATTS_TAG, "BLE_KEY_EVT, key type = %d", param->ble_security.ble_key.key_type);
         break;
     case ESP_GAP_BLE_AUTH_CMPL_EVT:
         esp_bd_addr_t bd_addr;
         memcpy(bd_addr, param->ble_security.auth_cmpl.bd_addr, sizeof(esp_bd_addr_t));
-        ESP_LOGI(GATTS_TAG, "AUTH_CMPL_EVT, address type = %d", param->ble_security.auth_cmpl.addr_type);
+
+        ESP_LOGI(GATTS_TAG, "AUTH_CMPL_EVT, remote device addr: %08x%04x",
+                 (bd_addr[0] << 24) + (bd_addr[1] << 16) + (bd_addr[2] << 8) + bd_addr[3],
+                 (bd_addr[4] << 8) + bd_addr[5]);
+        ESP_LOGI(GATTS_TAG, "AUTH_CMPL_EVT, address type = 0x%02x", param->ble_security.auth_cmpl.addr_type);
         ESP_LOGI(GATTS_TAG, "AUTH_CMPL_EVT, pair status = %s", param->ble_security.auth_cmpl.success ? "success" : "fail");
         if (!param->ble_security.auth_cmpl.success)
         {
@@ -694,12 +748,12 @@ static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param
         else
         {
             ESP_LOGI(GATTS_TAG, "AUTH_CMPL_EVT, auth mode = %s", esp_auth_req_to_str(param->ble_security.auth_cmpl.auth_mode));
-            raw_adv_data[23] = 0x00;
-            esp_err_t raw_adv_ret = esp_ble_gap_config_adv_data_raw(raw_adv_data, sizeof(raw_adv_data));
-            if (raw_adv_ret)
-            {
-                ESP_LOGE(GATTS_TAG, "config raw adv data failed, error code = %x ", raw_adv_ret);
-            }
+            // raw_adv_data[23] = 0x00;
+            // esp_err_t raw_adv_ret = esp_ble_gap_config_adv_data_raw(raw_adv_data, sizeof(raw_adv_data));
+            // if (raw_adv_ret)
+            // {
+            //     ESP_LOGE(GATTS_TAG, "config raw adv data failed, error code = %x ", raw_adv_ret);
+            // }
             // esp_err_t ret;
             // ret = esp_ble_gap_stop_advertising();
             // if (ret)
@@ -749,14 +803,23 @@ static void gatts_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_
 
     switch (event)
     {
+    case ESP_GATTS_CONNECT_EVT:
+        ESP_LOGI(GATTS_TAG, "ESP_GATTS_CONNECT_EVT, Device connected");
+        break;
+    case ESP_GATTS_DISCONNECT_EVT:
+        ESP_LOGI(GATTS_TAG, "ESP_GATTS_DISCONNECT_EVT, disconnect reason 0x%x", param->disconnect.reason);
+        /* start advertising again when missing the connect */
+        esp_ble_gap_start_advertising(&adv_params);
+        break;
     default:
-        ESP_LOGI(GATTS_TAG, "Something happened with the gatts profile %d", event);
         break;
     }
 }
 
 void app_main()
 {
+    esp_log_level_set("*", ESP_LOG_VERBOSE);
+
     esp_err_t ret;
 
     // Initialize NVS.
@@ -803,15 +866,6 @@ void app_main()
         return;
     }
 
-    // esp_bd_addr_t rand_addr;
-    // generate_random_address(rand_addr);
-    // ret = esp_ble_gap_set_rand_addr(rand_addr);
-    // if (ret)
-    // {
-    //     ESP_LOGE(GATTS_TAG, "failure to set random address, error code = %x", ret);
-    //     return;
-    // }
-
     ret = esp_ble_gatts_register_callback(gatts_event_handler);
     if (ret)
     {
@@ -825,14 +879,14 @@ void app_main()
         return;
     }
 
-    ret = esp_ble_gatts_app_register(PROFILE_OTAU_APP_ID);
+    ret = esp_ble_gatts_app_register(PROFILE_CONTROLS_APP_ID);
     if (ret)
     {
         ESP_LOGE(GATTS_TAG, "gatts app register error, error code = %x", ret);
         return;
     }
 
-    ret = esp_ble_gatts_app_register(PROFILE_CONTROLS_APP_ID);
+    ret = esp_ble_gatts_app_register(PROFILE_CONNECTIVITY_APP_ID);
     if (ret)
     {
         ESP_LOGE(GATTS_TAG, "gatts app register error, error code = %x", ret);
@@ -846,29 +900,19 @@ void app_main()
         return;
     }
 
-    ret = esp_ble_gatts_app_register(PROFILE_CONNECTIVITY_APP_ID);
+    ret = esp_ble_gatts_app_register(PROFILE_OTAU_APP_ID);
     if (ret)
     {
         ESP_LOGE(GATTS_TAG, "gatts app register error, error code = %x", ret);
         return;
     }
+
     esp_err_t local_mtu_ret = esp_ble_gatt_set_local_mtu(512);
     if (local_mtu_ret)
     {
         ESP_LOGE(GATTS_TAG, "set local  MTU failed, error code = %x", local_mtu_ret);
     }
     return;
-}
-
-void generate_random_address(esp_bd_addr_t rand_addr)
-{
-    // Generate random values for the rest of the address
-    for (int i = 0; i < ESP_BD_ADDR_LEN; i++)
-    {
-        rand_addr[i] = esp_random() & 0xFF;
-    }
-
-    rand_addr[0] = 0x40;
 }
 
 char *esp_auth_req_to_str(esp_ble_auth_req_t auth_req)

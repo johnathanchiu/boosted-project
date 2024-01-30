@@ -7,11 +7,17 @@
 #include "esp_bt.h"
 #include "esp_gap_ble_api.h"
 #include "esp_gatts_api.h"
+#include "esp_gattc_api.h"
 #include "esp_bt_defs.h"
 #include "esp_bt_main.h"
 #include "esp_gatt_common_api.h"
 #include "esp_bt_device.h"
 #include "esp_random.h"
+
+typedef struct
+{
+    esp_bt_uuid_t descr_uuid;
+} gatts_char_descr;
 
 struct gatts_char_profile
 {
@@ -20,6 +26,7 @@ struct gatts_char_profile
     esp_gatt_perm_t perm;
     esp_gatt_char_prop_t property;
     esp_attr_value_t *char_val;
+    gatts_char_descr *descr;
 };
 
 struct gatts_profile_inst
@@ -40,18 +47,18 @@ struct gatts_profile_inst
 
 // Define all the profiles
 #define NUM_PROFILES 4
-#define PROFILE_CONNECTIVITY_APP_ID 0
-#define PROFILE_DEVICE_INFO_APP_ID 1
-#define PROFILE_CONTROLS_APP_ID 2
+#define PROFILE_CONTROLS_APP_ID 0
+#define PROFILE_CONNECTIVITY_APP_ID 1
+#define PROFILE_DEVICE_INFO_APP_ID 2
 #define PROFILE_OTAU_APP_ID 3
 
 // Define controls services & characteristics
 #define CONTROLS_PROFILE_NUM_CHARS 4
-#define GATTS_CONTROLS_NUM_HANDLE 9
-#define PROFILE_CONTROLS_CHAR1_ID 0
-#define PROFILE_CONTROLS_CHAR2_ID 1
-#define PROFILE_CONTROLS_TRIGGER_ID 2
-#define PROFILE_CONTROLS_THROTTLE_ID 3
+#define GATTS_CONTROLS_NUM_HANDLE 10
+#define PROFILE_CONTROLS_THROTTLE_ID 0
+#define PROFILE_CONTROLS_TRIGGER_ID 1
+#define PROFILE_CONTROLS_CHAR1_ID 2
+#define PROFILE_CONTROLS_CHAR2_ID 3
 
 // Define device info services & characteristics
 #define DEVICE_INFO_PROFILE_NUM_CHARS 6
